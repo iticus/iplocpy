@@ -7,6 +7,8 @@ Created on Jul 20, 2015
 import csv
 import json
 import logging
+import psycopg2
+import pymongo
 import signal
 import tornado.web
 
@@ -17,7 +19,7 @@ _ADDRESSES = []
 _DETAILS = {}
 
 
-logging.basicConfig(level=settings.LOG_LEVEL, #filename='ip2loc.log',
+logging.basicConfig(level=settings.LOG_LEVEL, #filename='iplocpy.log',
     format='[%(asctime)s] - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
 
@@ -69,6 +71,8 @@ def find_ip(ipnum):
 
 class BaseHandler(tornado.web.RequestHandler):
     def initialize(self):
+        self.pgconn = self.settings['pgconn']
+        self.mgconn = self.settings['mgconn']
         self.set_header("Content-Type", "application/json")
         tornado.web.RequestHandler.initialize(self)
     
@@ -105,19 +109,49 @@ class IPHandler(BaseHandler):
         if not (0 <= ip <= 4294967295):
             return self.response('error', 'please input a valid IPv4 address')
         
-        pos = find_ip(ip)
-        if pos is None:
-            return self.response('error', 'could not find address')
-        
-        start_addr = _ADDRESSES[pos]
-        data = utils.sh2rec(start_addr, _DETAILS[start_addr])
-        self.response(data=data)
+        response = None
+        resolver = self.get_argument('resolver', 'mem')
+        if resolver == 'postgres':
+            cursor = self.pgconn.cursor()
+            cursor.execute('select x, y, country, county, city from addresses where x <= %s and y >= %s', (ip, ip))
+            records = cursor.fetchall()
+            if records:
+                record = records[0]
+                response =  {'range': (utils.int2ip(record[0]), utils.int2ip(record[1])),
+                    'country': record[2],
+                    'county': record[3],
+                    'city': record[4]
+                }
             
+        elif resolver == 'mongo':
+            records = self.mgconn.ipdb.addresses.find({'x': {'$lte': ip}, 'y': {'$gte': ip}})
+            if records:
+                record = records[0]
+                response =  {'range': (utils.int2ip(record['x']), utils.int2ip(record['y'])),
+                    'country': record['country'],
+                    'county': record['county'],
+                    'city': record['city']
+                }
+            
+        else:
+            pos = find_ip(ip)
+            if pos:
+                start_addr = _ADDRESSES[pos]
+                response = utils.sh2rec(start_addr, _DETAILS[start_addr])
+        
+        if response:    
+            return self.response(data=response)
+        
+        self.response('error', 'could not find address')
+            
+pgconn = psycopg2.connect(settings.POSTGRES_CONN)
+mgconn = pymongo.MongoClient(settings.MONGO_CONN)
 
 application = tornado.web.Application([
     (r"/", MainHandler),
     (r"/find/?", IPHandler, {}),
-])
+    ], pgconn=pgconn, mgconn=mgconn, debug=False, gzip=False
+)
 
 if __name__ == "__main__":
     

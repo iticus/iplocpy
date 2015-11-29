@@ -36,9 +36,20 @@ The application can use multiple data stores to balance memory consumption, CPU 
 	* memory usage: **1940 MB**
 	* lookup time: **~1ms** 
 	* throughput: **~1000 requests/second** (measured with Tornado's AsyncHTTPClient and [httperf](https://github.com/httperf/httperf))
-* PostgreSQL - *to be implemented*
-* MongoDB - *to be implemented*
+* PostgreSQL
+    * import time: **720 seconds** (inserting records + creating indexes)
+    * table size: **427 MB**
+    * index size: **360 MB**
+    * lookup time: **3 ms**, **279 ms**, **4 ms** (start, middle, end address)
+* MongoDB (wt+snappy)
+	* import time: **1916 seconds** (inserting documents + creating indexes)
+	* table size: **165 MB**
+	* index size: **161 MB**
+	* lookup time: **8 ms**, **7.5 s**, **9.7 s** (start, middle, end address)
 * Redis - *to be implemented*
 
 ###Notes
 1) For now the search function is only implemented for IPv4 addresses.
+2) PostgreSQL is about 3x faster at loading the data compared to MongoDB
+3) MongoDB table and index size are about 2.5x - 3x smaller than PostgreSQL (due to using snappy compression)
+4) Using two separate indexes (x and y) PostgreSQL seems to be performing much better than MongoDB (to be analyzed)
