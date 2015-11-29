@@ -17,7 +17,7 @@ create_query = '''CREATE TABLE addresses(id bigserial PRIMARY KEY,
         county text,
         city text
     );'''
-index_query = 'CREATE INDEX ON addresses(x);'
+index_query = 'CREATE INDEX ON addresses(x); CREATE INDEX ON addresses(y);'
     
 dbconn = psycopg2.connect(settings.POSTGRES_CONN)
 dbconn.autocommit = True
@@ -48,6 +48,6 @@ with open(settings.CSV_PATH, 'rb') as csvfile:
         )
         cursor.execute("INSERT INTO addresses(x, y, country, county, city) VALUES(%s, %s, %s, %s, %s)", data)
 
-print('creating index')
+print('creating indexes')
 cursor.execute(index_query)
 print('finished')

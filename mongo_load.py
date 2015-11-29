@@ -34,6 +34,7 @@ with open(settings.CSV_PATH, 'rb') as csvfile:
         }
         client.ipdb.addresses.insert_one(doc)
 
-print('creating index')
+print('creating indexes')
 client.ipdb.addresses.ensure_index([('x', 1)])
+client.ipdb.addresses.ensure_index([('y', 1)])
 print('finished')
