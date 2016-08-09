@@ -50,6 +50,9 @@ The application can use multiple data stores to balance memory consumption, CPU 
 
 ###Notes
 1) For now the search function is only implemented for IPv4 addresses.
+
 2) PostgreSQL is about 3x faster at loading the data compared to MongoDB
+
 3) MongoDB table and index size are about 2.5x - 3x smaller than PostgreSQL (due to using snappy compression)
+
 4) Using two separate indexes (x and y) PostgreSQL seems to be performing much better than MongoDB (to be analyzed)
