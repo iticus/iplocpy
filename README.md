@@ -1,8 +1,8 @@
-##iplocpy
+#iplocpy
 
 ***iplocpy*** (IP location Python) is a simple Tornado based web application to determine the location for an IP address. It is based on the free data (city level) available from [DB-IP](https://db-ip.com/).
 
-###Example
+##Example
 Request:
 ``` curl http://127.0.0.1:8080/find/?ip_addr=123.123.123.123```
 
@@ -22,14 +22,14 @@ Response:
 }
 ```
 
-###Requirements
+##Requirements
 The application is written in Python and uses the [Tornado](http://www.tornadoweb.org/en/stable/) web framework, *csv* and *json* modules.
 
-###Data source
+##Data source
 You need to download the db-ip city database from https://db-ip.com/db/download/city and unpack it.
 As of November 2015 the database size is  around 50 MB (400 MB unpacked). 
 
-###Performance
+##Performance
 The application can use multiple data stores to balance memory consumption, CPU usage and disk space. Some stats for the November 2015 data set on my Asus UX52VS notebook (10 GB RAM, i7-3517U CPU): 
 
 * in-memory
@@ -49,7 +49,7 @@ The application can use multiple data stores to balance memory consumption, CPU 
 	* lookup time: **8 ms**, **7.5 s**, **9.7 s** (start, middle, end address)
 * Redis - *to be implemented*
 
-###Notes
+##Notes
 1) For now the search function is only implemented for IPv4 addresses.
 
 2) PostgreSQL is about 3x faster at loading the data compared to MongoDB
